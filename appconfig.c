@@ -20,7 +20,7 @@ int appconfig_open(appconfig_p conf, const char *configFile){
 		conf->cur = xmlDocGetRootElement(conf->doc); 
 		if (conf->cur == NULL){
 			fprintf(stderr, "Empty Config File\n");
-			xmlFree(conf->doc);
+			xmlFreeDoc(conf->doc);
 			conf->doc = NULL;
 			return -1;
 		}else{
@@ -33,10 +33,11 @@ int appconfig_open(appconfig_p conf, const char *configFile){
 int appconfig_close(appconfig_p conf){
 	if(conf){
 		if(conf->doc){
-			xmlFree(conf->doc);
+			xmlFreeDoc(conf->doc);
 			conf->doc = NULL;
 		}
 		free(conf);
+		conf = NULL;
 	}
 }
 
@@ -102,7 +103,9 @@ int appconfig_getvalue(appconfig_p conf, const char *moduleName, const char *ele
 		if(appconfig_element(reqNode, elementName, &reqEle) ==0){
                 	reqString = xmlNodeListGetString(conf->doc, reqEle->xmlChildrenNode, 1);
 			if(reqString != NULL){
-				strcpy(result, reqString);
+				strcpy(result,(const char *) reqString);
+				xmlFree(reqString);
+				reqString=NULL;
 				return 0;
 			}
 		}
